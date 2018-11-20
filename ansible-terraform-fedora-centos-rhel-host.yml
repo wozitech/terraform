@@ -1,0 +1,67 @@
+---
+# builds terraforn/libvirt/ansible capable CentOS/RHEL/fedora host
+
+# to run this locally: ansible-playbook --connection=local --inventory 127.0.0.1, ansible-terraform-fedora-centos-rhel-host.yml
+
+- name: Configures this host as a vagrant/libvirt/ansible drive host
+  hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: update the local repo
+      become: true
+      yum:
+        name: "*"
+        state: latest
+        #exclude: git*
+      when:
+        - ansible_pkg_mgr == "yum"
+        - os_update is defined
+        - os_update == 1
+
+    - name: install the 'Development tools' package group
+      become: true
+      yum:
+        name: "@Development tools"
+        state: present
+
+    # note, no ansible, because the fact we're using ansible requires that ansible is already installed
+    # Fedora Server by default includes the ansible runtime
+    - name: Install vagrant and libvirt integration - note, the support for libvirt restricts the version of vagrant to 2.0.2.
+      become: true
+      yum:
+        name:
+          - wget
+        state: present
+
+    - name: Install ansible extensions for docker
+      become: true
+      pip:
+        name:
+          - ansible-container[docker]
+          - docker-py
+
+  # note - install of the vargant-libvirt package installs the plugin to vagrant too
+
+    - name: Clone firewalld ansible extension https://github.com/ptrunk/ansible-firewalld as a system role
+      become: true
+      git:
+        repo: https://github.com/ptrunk/ansible-firewalld
+        dest: /etc/ansible/roles/ptrunk.firewalld
+        update: no
+
+    - name: Install local ansible roles
+      shell: "ansible-galaxy install {{ item }}"
+      args:
+        creates: ".ansible/roles/{{ item }}/README.md"
+      with_items:
+        - ansiblebit.oracle-java
+        - ansible-thoteam.nexus3-oss
+        - bertvv.dnsmasq
+
+# combined vagrant and terraform host
+    - name: Install Terrafrom
+      become: true
+      unarchive:
+        src: https://releases.hashicorp.com/terraform/0.11.10/terraform_0.11.10_linux_amd64.zip
+        dest: /usr/bin
+        remote_src: True
