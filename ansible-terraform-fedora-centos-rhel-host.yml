@@ -26,11 +26,12 @@
 
     # note, no ansible, because the fact we're using ansible requires that ansible is already installed
     # Fedora Server by default includes the ansible runtime
-    - name: Install vagrant and libvirt integration - note, the support for libvirt restricts the version of vagrant to 2.0.2.
+    - name: Install dependencies.
       become: true
       yum:
         name:
           - wget
+          - python-pip
         state: present
 
     - name: Install ansible extensions for docker
@@ -58,10 +59,20 @@
         - ansible-thoteam.nexus3-oss
         - bertvv.dnsmasq
 
-# combined vagrant and terraform host
     - name: Install Terrafrom
       become: true
       unarchive:
         src: https://releases.hashicorp.com/terraform/0.11.10/terraform_0.11.10_linux_amd64.zip
         dest: /usr/bin
         remote_src: True
+
+    - name: Install AWS CLI
+      become: true
+      pip: >
+        name=awscli
+        state=latest
+
+    - name: Current node.js version
+      debug:
+        msg: "Remember to create ~/.aws/credentials adding aws_access_key_id and aws_secret_access_key"
+
