@@ -91,3 +91,9 @@ resource "aws_instance" "accept-web-1" {
     ]
   }
 }
+
+module "my-vpc" {
+  source = "../../modules/vpc"
+  vpc_name = "wozitech_${var.env}"
+  env = "${var.env}"
+}
