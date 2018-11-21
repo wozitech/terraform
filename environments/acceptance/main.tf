@@ -5,6 +5,42 @@ provider "aws" {
   profile    = "acceptance-terraform"
 }
 
+# to use an existing role (unmanged by terraform) use data not resource
+data "aws_iam_role" "EC2-full-access" {
+  name = "EC2-full-access"
+}
+
+resource "aws_iam_role" "ec2-basic" {
+  name = "${var.env}_ec2_role"
+  path = "/"
+
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+               "Service": "ec2.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "${var.env}_ec2_profile"
+  role = "${aws_iam_role.ec2-basic.name}"
+}
+
+resource "aws_iam_instance_profile" "ec2_alt_profile" {
+  name = "${var.env}_ec2_alt_profile"
+  role = "${data.aws_iam_role.EC2-full-access.name}"
+}
+
 data "aws_ami" "amzn" {
   most_recent = true
 
@@ -25,7 +61,17 @@ resource "aws_instance" "accept-web-1" {
   source_dest_check = true
   count = 1
   subnet_id = "${var.subnet-2b}"
-  iam_instance_profile = "ec2-full-access"
-  tenancy = "shared"
+  iam_instance_profile = "${aws_iam_instance_profile.ec2_alt_profile.name}"
+  #tenancy = "shared"
   key_name = "wozitech-1"
+  tags {
+    Name = "accept-web-1"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "yum -y update",
+      "yum -y install nginx",
+      "service nginx start"
+    ]
+  }
 }

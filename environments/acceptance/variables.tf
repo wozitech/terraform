@@ -4,6 +4,10 @@ variable "region" {
   type = "string"
 }
 
+variable "env" {
+    default = "acceptance"
+}
+
 # TODO: make subnets a list/map (dictionary)
 # https://www.terraform.io/intro/getting-started/variables.html
 variable "subnet-2a" {
