@@ -55,6 +55,10 @@ data "aws_ami" "amzn" {
   }
 }
 
+data "aws_security_group" "ssh-only" {
+  name = "sg_ssh_inbound"
+}
+
 resource "aws_instance" "accept-web-1" {
   ami           = "${data.aws_ami.amzn.id}"
   instance_type = "t2.micro"
@@ -62,6 +66,9 @@ resource "aws_instance" "accept-web-1" {
   count = 1
   subnet_id = "${var.subnet-2b}"
   iam_instance_profile = "${aws_iam_instance_profile.ec2_alt_profile.name}"
+  vpc_security_group_ids = [
+    "${data.aws_security_group.ssh-only.name}"
+  ]
   #tenancy = "shared"
   key_name = "wozitech-1"
   tags {
