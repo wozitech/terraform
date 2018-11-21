@@ -35,10 +35,9 @@ resource "aws_internet_gateway" "igw" {
     }   
 }
 
-# public routing tables
-resource "aws_route_table" "public_routes" {
+# public routing table - note, subnets can share the same routing table
+resource "aws_route_table" "public_route" {
   vpc_id = "${aws_vpc.this_vpc.id}"
-  count = "${var.num_of_avs}"
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -51,12 +50,12 @@ resource "aws_route_table" "public_routes" {
   }
 
   tags {
-    Name = "${var.vpc_name}-route-public-${element(var.av_zones, count.index)}"
+    Name = "${var.vpc_name}-route-public"
   }
 }
 
 resource "aws_route_table_association" "public_subnet_routes" {
   count = "${var.num_of_avs}"
   subnet_id      = "${element(aws_subnet.public_subnets.*.id, count.index)}"
-  route_table_id = "${element(aws_route_table.public_routes.*.id, count.index)}"
+  route_table_id = "${aws_route_table.public_route.id}"
 }
