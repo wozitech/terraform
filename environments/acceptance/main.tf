@@ -96,4 +96,5 @@ module "my-vpc" {
   source = "../../modules/vpc"
   vpc_name = "wozitech_${var.env}"
   env = "${var.env}"
+  num_of_avs = 3
 }

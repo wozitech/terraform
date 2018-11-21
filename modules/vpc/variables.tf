@@ -3,6 +3,11 @@ variable "env" {
 variable "vpc_name" {
 }
 
+variable "num_of_avs" {
+    description = "The number of AVs to create"
+    default = 1
+}
+
 variable "cidr" {
     type = "map"
     default = {
