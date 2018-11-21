@@ -56,7 +56,11 @@ data "aws_ami" "amzn" {
 }
 
 data "aws_security_group" "ssh-only" {
-  name = "sg_ssh_inbound"
+  id = "sg-0813895852f33cc81"
+}
+
+resource "aws_security_group" "web-proxy" {
+
 }
 
 resource "aws_instance" "accept-web-1" {
@@ -67,18 +71,23 @@ resource "aws_instance" "accept-web-1" {
   subnet_id = "${var.subnet-2b}"
   iam_instance_profile = "${aws_iam_instance_profile.ec2_alt_profile.name}"
   vpc_security_group_ids = [
-    "${data.aws_security_group.ssh-only.name}"
+    "${data.aws_security_group.ssh-only.id}"
   ]
   #tenancy = "shared"
   key_name = "wozitech-1"
   tags {
     Name = "accept-web-1"
   }
+  
+  connection {
+    user = "ec2-user"
+    private_key = "${file("${path.module}/priv.key")}"
+  }
   provisioner "remote-exec" {
     inline = [
-      "yum -y update",
-      "yum -y install nginx",
-      "service nginx start"
+      "sudo yum -y update",
+      "sudo yum -y install nginx",
+      "sudo service nginx start"
     ]
   }
 }

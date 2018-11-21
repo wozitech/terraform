@@ -9,3 +9,4 @@
 *.tfvars
 
 **/.aws/creds
+**/priv.key
