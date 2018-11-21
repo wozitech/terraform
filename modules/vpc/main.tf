@@ -13,7 +13,7 @@ resource "aws_subnet" "public_subnets" {
     map_public_ip_on_launch = true
     vpc_id = "${aws_vpc.this_vpc.id}"
     tags {
-        Name = "wozitech-public-${element(var.av_zones, count.index)}"
+        Name = "${var.vpc_name}-public-${element(var.av_zones, count.index)}"
     }
 }
 
@@ -24,6 +24,13 @@ resource "aws_subnet" "private_subnets" {
     map_public_ip_on_launch = false
     vpc_id = "${aws_vpc.this_vpc.id}"
     tags {
-        Name = "wozitech-private-${element(var.av_zones, count.index)}"
+        Name = "${var.vpc_name}-private-${element(var.av_zones, count.index)}"
     }
+}
+
+resource "aws_internet_gateway" "igw" {
+    vpc_id = "${aws_vpc.this_vpc.id}"
+    tags = {
+        Name = "${var.vpc_name}-igw"
+    }   
 }
