@@ -10,36 +10,10 @@ data "aws_iam_role" "EC2-full-access" {
   name = "EC2-full-access"
 }
 
-resource "aws_iam_role" "ec2-basic" {
-  name = "${var.env}_ec2_role"
-  path = "/"
-
-  assume_role_policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Action": "sts:AssumeRole",
-            "Principal": {
-               "Service": "ec2.amazonaws.com"
-            },
-            "Effect": "Allow",
-            "Sid": ""
-        }
-    ]
-}
-EOF
-}
-
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "${var.env}_ec2_profile"
-  role = "${aws_iam_role.ec2-basic.name}"
-}
-
-resource "aws_iam_instance_profile" "ec2_alt_profile" {
-  name = "${var.env}_ec2_alt_profile"
-  role = "${data.aws_iam_role.EC2-full-access.name}"
-}
+# resource "aws_iam_instance_profile" "ec2_alt_profile" {
+#   name = "${var.env}_ec2_alt_profile"
+#   role = "${data.aws_iam_role.EC2-full-access.name}"
+# }
 
 data "aws_ami" "amzn" {
   most_recent = true
@@ -59,42 +33,38 @@ data "aws_security_group" "ssh-only" {
   id = "sg-0813895852f33cc81"
 }
 
-resource "aws_security_group" "web-proxy" {
-
-}
-
-resource "aws_instance" "accept-web-1" {
-  ami           = "${data.aws_ami.amzn.id}"
-  instance_type = "t2.micro"
-  source_dest_check = true
-  count = 1
-  subnet_id = "${var.subnet-2b}"
-  iam_instance_profile = "${aws_iam_instance_profile.ec2_alt_profile.name}"
-  vpc_security_group_ids = [
-    "${data.aws_security_group.ssh-only.id}"
-  ]
-  #tenancy = "shared"
-  key_name = "wozitech-1"
-  tags {
-    Name = "accept-web-1"
-  }
+# resource "aws_instance" "accept-web-1" {
+#   ami           = "${data.aws_ami.amzn.id}"
+#   instance_type = "t2.micro"
+#   source_dest_check = true
+#   count = 1
+#   subnet_id = "${var.subnet-2b}"
+#   iam_instance_profile = "${aws_iam_instance_profile.ec2_alt_profile.name}"
+#   vpc_security_group_ids = [
+#     "${data.aws_security_group.ssh-only.id}"
+#   ]
+#   #tenancy = "shared"
+#   key_name = "wozitech-1"
+#   tags {
+#     Name = "accept-web-1"
+#   }
   
-  connection {
-    user = "ec2-user"
-    private_key = "${file("${path.module}/priv.key")}"
-  }
-  provisioner "remote-exec" {
-    inline = [
-      "sudo yum -y update",
-      "sudo yum -y install nginx",
-      "sudo service nginx start"
-    ]
-  }
-}
+#   connection {
+#     user = "ec2-user"
+#     private_key = "${file("${path.module}/priv.key")}"
+#   }
+#   provisioner "remote-exec" {
+#     inline = [
+#       "sudo yum -y update",
+#       "sudo yum -y install nginx",
+#       "sudo service nginx start"
+#     ]
+#   }
+# }
 
 module "my-vpc" {
   source = "../../modules/vpc"
   vpc_name = "wozitech_${var.env}"
   env = "${var.env}"
-  num_of_avs = 3
+  num_of_avs = 2
 }
