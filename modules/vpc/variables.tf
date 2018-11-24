@@ -3,6 +3,9 @@ variable "env" {
 variable "vpc_name" {
 }
 
+variable "private_key_location" {
+}
+
 variable "num_of_avs" {
     description = "The number of AVs to create"
     default = 1

@@ -67,4 +67,5 @@ module "my-vpc" {
   vpc_name = "wozitech_${var.env}"
   env = "${var.env}"
   num_of_avs = 2
+  private_key_location = "${file("${path.module}/priv.key")}"
 }

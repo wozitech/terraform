@@ -178,4 +178,21 @@ resource "aws_instance" "bastions" {
     Application = "wit"
     Role = "bastion"
   }
+
+  connection {
+    user = "ec2-user"
+    private_key = "${var.private_key_location}"
+  }
+
+  # crude provisioning of a named user with admin rights. Manually generate and share key
+  provisioner "remote-exec" {
+    inline = [
+      "sudo groupadd -g 10000 aylingw",
+      "sudo groupadd -g 5000 wit-admin",
+      "sudo useradd -u 10000 -g 10000 -G wit-admin aylingw",
+      "sudo sudo bash -c 'echo \"%wit-admin  ALL=(ALL)       NOPASSWD: ALL\" > /etc/sudoers.d/wit-admin'",
+      "sudo chmod 0440 /etc/sudoers.d/wit-admin",
+      "sudo visudo -cf /etc/sudoers"
+    ]
+  }
 }
