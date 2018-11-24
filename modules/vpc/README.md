@@ -1,8 +1,13 @@
 # WOZiTech VPC module
-Create a new VPC, having a public and a private subnet (each /24).
+Create a reference WOZiTech VPC, having a public and a private subnet, with a bastion server deployed into the public subnet with allow all SSH to it.
 
 # Inputs
 * `vpc_name` - the name of the VPC; defauls to wozitech_[env]
-* `cpv_cidr` - the address range of this VPC; defaults to 10.0.0.0/16 for env=production, 172.16.0.0/16 for acceptance, 192.168.100.0/24 for test and 192.168.0.1/24 for dev
-* `av_zones` - a list of the AV zones to create a public; defaults to the three eu-west-2 AVs
-# 
+* `env` - the name of the environment, which is used to identify VPC CIDR block range, availability zones and subnets.
+* `number_of_avs` - whether to create 1, 2 or 3 Availability Zones
+
+# Limitations/TODO
+* Assumes region is eu-west-2
+* NAT Gateway - to allow outbound internet from private subnets
+* Network ACL - to restrict traffic to/from given source (CIDR range)
+* AWS Secret Manager - for creating user accounts on the bastion.
