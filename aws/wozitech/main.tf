@@ -36,43 +36,6 @@ resource "aws_iam_policy" "lambda_basic_policy" {
 }
 EOF
 }
-# dangerous - this role allows all actions on all Secrets within the given region!
-# resource "aws_iam_role_policy" "secrets_read_policy" {
-#   name = "${var.name}_${null_resource.resource_region_name.triggers.label}_secrets_read_policy"
-
-#   policy = <<EOF
-# {
-#     "Version": "2012-10-17",
-#     "Statement": [
-#         {
-#             "Effect": "Allow",
-#             "Action": "secretsmanager:*",
-#             "Resource": "arn:aws:secretsmanager:${var.region}:${var.account}:secret:*"
-#         }
-#     ]
-# }
-# EOF
-# }
-
-resource "aws_iam_policy" "tfl_only_secret_read_policy" {
-  name = "${var.name}_${local.resource_region_name}_tfl_only_secret_read_policy"
-
-  policy = <<EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-              "secretsmanager:DescribeSecret",
-              "secretsmanager:GetSecretValue"
-            ],
-            "Resource": "arn:aws:secretsmanager:${var.region}:${var.account}:secret:TFL_API_Portal-jT6jsf"
-        }
-    ]
-}
-EOF
-}
 
 resource "aws_iam_role" "lambda_basic_role" {
   name = "${var.name}_${local.resource_region_name}_lambda_basic_role"
@@ -122,6 +85,45 @@ EOF
     API = "TFL"
   }
 }
+resource "aws_iam_policy" "tfl_only_secret_read_policy" {
+  name = "${var.name}_${local.resource_region_name}_tfl_only_secret_read_policy"
+
+  policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "arn:aws:logs:${var.region}:${var.account}:*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": [
+                "arn:aws:logs:${var.region}:${var.account}:log-group:/aws/lambda/*:*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+              "secretsmanager:DescribeSecret",
+              "secretsmanager:GetSecretValue"
+            ],
+            "Resource": "arn:aws:secretsmanager:${var.region}:${var.account}:secret:TFL_API_Portal-jT6jsf"
+        }
+    ]
+}
+EOF
+}
+resource "aws_iam_role_policy_attachment" "tfl_lambda_policy_attach" {
+  role = "${aws_iam_role.tfl_lambda_role.name}"
+  policy_arn = "${aws_iam_policy.tfl_only_secret_read_policy.arn}"
+}
+
 
 # attach the basic lambda and TFL specific secrets manager policies to the tfl-lambda-role
 # Have tried 
@@ -136,10 +138,10 @@ EOF
 #   role = "${aws_iam_role.lambda_basic_role.name}"
 #   policy_arn = "${local.tfl_lambda_policies[count.index]}"
 # }
-resource "aws_iam_role_policy_attachment" "tfl_lambda_default_policy_attach" {
-  role = "${aws_iam_role.tfl_lambda_role.name}"
-  policy_arn = "${aws_iam_policy.lambda_basic_policy.arn}"
-}
+# resource "aws_iam_role_policy_attachment" "tfl_lambda_default_policy_attach" {
+#   role = "${aws_iam_role.tfl_lambda_role.name}"
+#   policy_arn = "${aws_iam_policy.lambda_basic_policy.arn}"
+# }
 # resource "aws_iam_role_policy_attachment" "tfl_lambda_secrets_policy_attach" {
 #   role = "${aws_iam_role.tfl_lambda_role.name}"
 #   policy_arn = "${aws_iam_policy.tfl_only_secret_read_policy.arn}"
