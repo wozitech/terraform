@@ -113,7 +113,7 @@ resource "aws_iam_policy" "tfl_only_secret_read_policy" {
               "secretsmanager:DescribeSecret",
               "secretsmanager:GetSecretValue"
             ],
-            "Resource": "arn:aws:secretsmanager:${var.region}:${var.account}:secret:TFL_API_Portal-jT6jsf"
+            "Resource": "arn:aws:secretsmanager:${var.region}:${var.account}:secret:TFL_API_Portal-bXsWkS"
         }
     ]
 }
