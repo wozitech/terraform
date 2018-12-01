@@ -113,7 +113,10 @@ resource "aws_iam_policy" "tfl_only_secret_read_policy" {
               "secretsmanager:DescribeSecret",
               "secretsmanager:GetSecretValue"
             ],
-            "Resource": "arn:aws:secretsmanager:${var.region}:${var.account}:secret:TFL_API_Portal-bXsWkS"
+            "Resource": [
+                "arn:aws:secretsmanager:${var.region}:${var.account}:secret:SLACK_MY_BUSES-TIO2OX",
+                "arn:aws:secretsmanager:${var.region}:${var.account}:secret:TFL_API_Portal-bXsWkS"
+            ]
         }
     ]
 }
